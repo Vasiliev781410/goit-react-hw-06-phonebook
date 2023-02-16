@@ -1,10 +1,14 @@
 import { useState } from "react";
 import css from "./ContactForm.module.css";
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from "react-redux";
+import { addContactAction } from "../../redux/contacts-slice";
+import { nanoid } from 'nanoid';
 
-export const ContactForm = ({onSubmit}) => {
+export const ContactForm = () => {
     const [name,setName] = useState("");
     const [number,setNumber] = useState("");
+    const dispatch = useDispatch();
+    const selectContacts = useSelector((state) => state.contacts.contacts);
   
     const onChange = (e)=>{
         e.preventDefault();
@@ -21,16 +25,20 @@ export const ContactForm = ({onSubmit}) => {
         }    
        
     };
-    const onSubmitLocal = (evt)=>{
-        onSubmit({name,number},evt);
-        setName("");        
-        setNumber("");       
+    const onSubmitLocal = (evt)=>{       
+        const newContact = {id: nanoid(), name: name, number: number}; 
+        setName("");    
+        setNumber("");  
+        if (selectContacts.some((contact) => contact.name.toLowerCase().trim() === name.toLowerCase().trim())) {
+            return alert(`${name} already exists`);
+          }
+        dispatch(addContactAction(newContact));           
     };
 
   
     return (
         <form onSubmit={onSubmitLocal} className={css.contactForm} action="">
-            <div className={css.contactForm__item}>
+             <div className={css.contactForm__item}>
                 <label className={css.contactForm__label} htmlFor="inputName">Name</label>
                 <input 
                     onChange={onChange}
@@ -62,7 +70,3 @@ export const ContactForm = ({onSubmit}) => {
         </form>
     )    
 }
-
-ContactForm.propTypes = {  
-    onSubmit: PropTypes.func,
-  };
